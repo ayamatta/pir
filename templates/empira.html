@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>0.05</title>
+	<link rel="stylesheet" href="static/css/jquery-ui.css">
+	<script src="static/js/jquery.js"></script>
+	<script src="static/js/jquery-ui.js"></script>
+	<style>
+	#sortable { list-style-type: none; margin: 0; padding: 0; width: 60%; }
+	#sortable li { margin: 0 3px 3px 3px; padding: 0.4em; padding-left: 1.5em; font-size: 1.4em; height: 18px; }
+	#sortable li span { position: absolute; margin-left: -1.3em; }
+	</style>
+	<script>
+	$(function() {
+		$( "#sortable" ).sortable({
+            update: function(e, ui){
+                $.post("/_upd_pos","sl="+$(this).sortable('toArray').toString());
+            }
+        });
+		$( "#sortable" ).disableSelection();
+        $('#f').submit(function() {
+                $.post("/_add_new_task","title="+$("#text").val()
+                    , function(res) {
+                        $("#sortable").prepend(res);
+                        $(".ui-state-default").bind('click', function() {
+                            $("#cur_task_name").html($(this).text());
+                            $("#todel").attr("href", "/_del_task/"+$(this).attr('id'));
+                            $("#taskmenu").show();
+                        });
+                    }
+                );
+                $("#text").val('');
+                return false;
+            });
+        $("#taskmenu").hide();
+        $(".ui-state-default").bind('click', function() {
+            $("#cur_task_name").html($(this).text());
+            $("#todel").attr("href", "/_del_task/"+$(this).attr('id'));
+            $("#taskmenu").show();
+        });
+	});
+	</script>
+</head>
+<body>
+<div class="version" style=""><a href="/version/005">Эмпира v. 0.05</a></div>
+    <form method="POST" action="_add_new_task" id="f">
+        <input type="text" name="title" id="text">
+        <input type="submit">
+    </form>
+<div class="demo">
+
+<ul id="sortable">
+{% for task in tl %}
+	<li class="ui-state-default" id="{{ task.tid }}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>{{ task.title }}</li>
+{% endfor %}
+</ul>
+
+</div>
+<div>
+<div id='taskmenu'>
+    <div id='cur_task_name'></div>
+    <button id='task_complete'>Сделано</button>
+    <a href='' id='todel'>Удалить</a>
+</div>
+</div>
+</body>
+</html>
