@@ -1,7 +1,7 @@
 import core
 
 def __create_group_dict(bossid, name, id):
-    return {'perm':{'_full':[-bossid]}, 'name':name, '_id':str(id), 'members':[bossid], 'parents':[1]}
+    return {'perm':{'_full':[-bossid]}, 'name':name, '_id':str(id), 'members':[bossid], 'parents':[1], 'buf':[]}
 
 def _create_group(bossid, name):
     glob=core.getdoc('groups', "glob")

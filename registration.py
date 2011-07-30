@@ -1,14 +1,20 @@
  # -*- coding: utf-8 -*-
-from core import check_rights
-from auth import auth_log_the_user_in
-regbot={'username':'regbot','groups':[-2],'uid':2}
+import core
 
-def reg_username_is_free(un, rfu=regbot):
-    t=check_rights(rfu,'reg','un_is_free',(un,))
-    if t[0]>0:
+def __create_userdict(id, un, pw):
+    return {'_id':id, 'un':un, 'pw':pw}
+
+def _username_is_free(un):
+    t=core.getdb('users').view('registration/check_free', key=un).rows
+    if t==[]:
+        return True
+    else:
         return False
-    return True
 
-def reg_user(un, pw, groups=[], rfu=regbot):
-    check_rights(rfu,'reg','reg_user',(un,pw))
-    return auth_log_the_user_in(un)
+def _new_user(un, pw):
+    glob=core.getdoc('users', "glob")
+    glob['counter']=glob['counter']+1
+    userdoc=__create_userdict(str(glob['counter']), un, pw)
+    core.setdoc('users', glob)
+    core.getdb('tasks')[str(-glob['counter'])]={'tasklist':[], 'buf':[], 'taskcounter':0}
+    return core.setdoc('users', userdoc)

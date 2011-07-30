@@ -5,7 +5,7 @@ import auth, empira
 app = Flask(__name__)
 
 def my_page_empira():
-    tasklist=empira._get_all_tasks(session['user']['_id'])
+    tasklist=empira.__hide_finisthed_tasks(empira._get_all_tasks(session['user']['_id']))
     return render_template("empira.html", tl=tasklist)
 
 def not_my_page_empira():
@@ -25,25 +25,25 @@ def upd():
         empira_upd_task_pos(session['user'], i, x)
     return ""#redirect("/"+session['user']['username'])
 
-@app.route('/_add_new_task', methods=['POST'])
+@app.route('/user/_add_new_task', methods=['POST'])
 def add_task():
     def to_li(t):
-        txt='<li class="ui-state-default" id="'+escape(str(t['tid']))+'"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'+t['title']+'</li>'
+        txt='<li class="ui-state-default" id="'+escape(str(t['_id']))+'"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'+t['title']+'</li>'
         return txt
-    t=empira_add_task(session['user'],escape(request.form['title']))
+    t=empira._add_task(session['user']['_id'],request.form['title'])
     return to_li(t[0])
 
 @app.route('/',methods=['POST','GET'])
 def login():
     if request.method=='POST':
-        t=auth.log_the_user_in(escape(request.form['username']),escape(request.form['pass']))
+        t=auth.log_the_user_in(request.form['username'],request.form['pass'])
         if t:
             session['user']=t
             return redirect("/user/"+session['user']['un'])
         else:
             return 'invalid username/password'
     if 'user' in session:
-        return redirect("/user/"+session['user']['username'])
+        return redirect("/user/"+session['user']['un'])
     return '''
     <body>
         <form method=POST id=form>
@@ -57,13 +57,13 @@ def login():
 @app.route('/user/')#личная страничка
 def user():
     if user in session:
-        return redirect("/user/"+session['user']['username'])
+        return redirect("/user/"+session['user']['un'])
     else:
         return redirect("/")
 
 @app.route('/user/<username>')#личная страничка
 def page(username):
-    if session['user']['username']==username:
+    if session['user']['un']==username:
         return my_page_empira()
     else:
         return not_my_page_empira()

@@ -1,9 +1,11 @@
 import core
-#from time import time
+from time import time
 
 def __create_taskdict(id, title):
     t={'_id': id,
         'title': title, 
+        'catid': 0, 
+        'createtime': time()
         }
     return t
 
@@ -12,7 +14,7 @@ def _get_all_tasks(uid):
     tasklist=t[0]['value']
     return tasklist
 
-def _add_task(uid, task):
+def _add_task(uid, task_title):
     tasks=core.getdoc('tasks', str(-uid))
     tasks['taskcounter']=tasks['taskcounter']+1
     tasks['tasklist'].append(__create_taskdict(tasks['taskcounter'], task_title))
@@ -49,6 +51,29 @@ def _edit_task(uid, new):
     core.setdoc('tasks', doc)
     return _get_all_tasks(uid)
 
-def add_task(uid, task_title):
-    t=__create_taskdict(tasks['taskcounter'], task_title)
-    
+def _change_task_category(uid, tid, newcatid):
+    t=core.getdb('tasks').view('users/gettask', key=[str(-uid), tid]).rows[0]['value']
+    t['catid']=newcatid
+    _edit_task(uid, t)
+
+def _get_tasks_by_category(uid, catid):#nado izmenit'
+    t=core.getdb('tasks').view('users/gettasklistbycatid', key=[str(-uid), catid]).rows[0]['value']
+    return t
+
+def _finish_task(uid, tid):
+    t=core.getdb('tasks').view('users/gettask', key=[str(-uid), tid]).rows[0]['value']
+    t['finishtime']=time()
+    _edit_task(uid, t)
+
+def __hide_finisthed_tasks(full):
+    uncompleted=[]
+    for i in full:
+        if not i.has_key('finishtime'):
+            uncompleted.append(i)
+    return uncompleted
+
+def _add_task_to_buf(uid, gid, task_title):
+    tasks=core.getdoc('tasks', str(gid))
+    buftask={'title':task_title, 'creator_id':uid}
+    tasks['buf'].append(buftask)
+    core.setdoc('tasks', tasks)
