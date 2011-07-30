@@ -20,15 +20,15 @@ def setdoc(db, doc):
 
 def cani(groups, shit, ifican):
     if 2 in groups:
-        return ifican[0](ifican[1])
+        return ifican[0](*ifican[1])
     if shit[0]=='_global':
         if (list(set(groups) & set(getdb(shit[1])['_perm'][shit[2]]))!=[]) or (list(set(groups) & set(getdb(shit[1])['_perm']['_full']))!=[]):
-            return ifican[0](ifican[1])
+            return ifican[0](*ifican[1])
         else:
             return False
     else:
         if (list(set(groups) & set(getdb(shit[1])['_perm'][shit[2]]))!=[]) or (list(set(groups) & set(getdb(shit[1])['_perm']['_full']))!=[]):
-            return ifican[0](ifican[1])
+            return ifican[0](*ifican[1])
         else:
             return False
 

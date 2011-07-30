@@ -5,7 +5,7 @@ import auth, empira
 app = Flask(__name__)
 
 def my_page_empira():
-    tasklist=empira_get_all_my_tasks(session['user'])
+    tasklist=empira._get_all_tasks(session['user']['_id'])
     return render_template("empira.html", tl=tasklist)
 
 def not_my_page_empira():
@@ -33,11 +33,11 @@ def add_task():
     t=empira_add_task(session['user'],escape(request.form['title']))
     return to_li(t[0])
 
-@app.route('/',methods=['POST','GET'])#здесь должен быть логин
+@app.route('/',methods=['POST','GET'])
 def login():
     if request.method=='POST':
         t=auth.log_the_user_in(escape(request.form['username']),escape(request.form['pass']))
-        if t!=False:
+        if t:
             session['user']=t
             return redirect("/user/"+session['user']['un'])
         else:

@@ -1,51 +1,54 @@
 import core
-from time import time
+#from time import time
 
-def get_all_my_tasks(args):
-    t=core.getdb('tasks').view('users/gettasksbyuid', key=args['user']['_id']).rows
-    tasklist=[]
-    for i in t:
-        tasklist=[i['value']]+tasklist
+def __create_taskdict(id, title):
+    t={'_id': id,
+        'title': title, 
+        }
+    return t
+
+def _get_all_tasks(uid):
+    t=core.getdb('tasks').view('users/gettasklist', key=str(-uid)).rows
+    tasklist=t[0]['value']
     return tasklist
 
-def add_task(args):
-    args['user']['taskcount']=args['user']['taskcount']+1
-    args['user']['waitcount']=args['user']['waitcount']+1
-    t={'_id': args['user']['_id']+"-"+ str(args['user']['taskcount']), 
-        'vasya':args['user']['_id'], 
-        'title':args['task_title'], 
-        'add_time':int(time()), 
-        'status':"waiting", 
-        'pos':args['user']['waitcount']
-        }
-    return core.setdoc('tasks', t)
+def _add_task(uid, task):
+    tasks=core.getdoc('tasks', str(-uid))
+    tasks['taskcounter']=tasks['taskcounter']+1
+    tasks['tasklist'].append(__create_taskdict(tasks['taskcounter'], task_title))
+    core.setdoc('tasks', tasks)
+    return _get_all_tasks(uid)
 
-#def empira_add_task_rel(user, tid, gid):
-#    check_rights(user,'empira','add_task_rel',(gid, tid ))
+def _upd_tasks_pos(uid, taskidlist):
+    newdoc=core.getdoc('tasks', str(-uid))
+    t=newdoc.copy()['tasklist']
+    neworder=[]
+    for i in taskidlist:
+        x=len(t)
+        j=-1
+        while len(t)==x:
+            j=j+1
+            if t[j]['_id']==i:
+                neworder.append(t[j])
+                del t[j]
+    newdoc['tasklist']=neworder
+    core.setdoc('tasks', newdoc)
+    return _get_all_tasks(uid)
 
-def upd_tasks_pos(args):
-    t=0
-    for i in args['newposarr']:
-        t=t+1
-        e=core.getdoc('tasks', args['user']['_id']+'-'+str(i))
-        if e['pos']!=t:
-            e['pos']=t
-            core.setdoc('tasks', e)
+def _del_task(uid, tid):
+    t=core.getdb('tasks').view('users/gettask', key=[str(-uid), tid]).rows[0]['value']
+    new=core.getdoc('tasks',str(-uid))
+    del new['tasklist'][new['tasklist'].index(t)]
+    core.setdoc('tasks', new)
+    return _get_all_tasks(uid)
 
-def read_task_desc(user, tid):
-    t=check_rights(user,'empira','read_task_desc',(tid,))
+def _edit_task(uid, new):
+    t=core.getdb('tasks').view('users/gettask', key=[str(-uid), new['_id']]).rows[0]['value']
+    doc=core.getdoc('tasks',str(-uid))
+    doc['tasklist'][doc['tasklist'].index(t)]=new
+    core.setdoc('tasks', doc)
+    return _get_all_tasks(uid)
 
-def del_task(user, tid):
-    t=check_rights(user,'empira','del_task',(tid,user['id']))
-
-#def empira_start_task(user, tid):
-#    t=check_rights(user,'empira','start_task',(tid,user['id']))
-
-#def empira_finish_task(user, tid):
-#    t=check_rights(user,'empira','finish_task',(tid,user['id']))
-
-#def empira_postpone_task(user, tid):
-#    t=check_rights(user,'empira','postpone_task',(tid,user['id']))
-
-def archive_add(user, tid):
-    t=check_rights(user,'empira','add_to_archive',(tid,user['id']))
+def add_task(uid, task_title):
+    t=__create_taskdict(tasks['taskcounter'], task_title)
+    
