@@ -4,34 +4,47 @@ import auth, empira
 
 app = Flask(__name__)
 
-def my_page_empira():
-    tasklist=empira.__hide_finisthed_tasks(empira._get_all_tasks(session['user']['_id']))
+def my_page():
+    tasklist=empira.__filter_finisthed_tasks(empira._get_all_tasks(session['user']['_id']))
     return render_template("empira.html", tl=tasklist)
 
-def not_my_page_empira():
+def not_my_page():
     return u"not mine"
 
-@app.route('/_del_task/<tid>')
+@app.route('/ajax/_tasklist/<uid>')
+def tasklist(uid):
+    tasklist=empira.__filter_finisthed_tasks(empira._get_all_tasks(uid))
+    if uid!=session['user']['_id']:
+        v=[]
+        for i in tasklist:
+            if core._perm_check(session['user']['groups'], i['perm']['view']):
+                v.append(i)
+    tasklist=v
+    for i in tasklist:
+        i['title']=escape(i['title'])
+    return render_template("tasklist", tl=tasklist)
+
+@app.route('/ajax/_del_task/<tid>')
 def del_task(tid):
-    empira_del_task(session['user'], tid)
+    empira._del_task(session['user']['_id'], tid)
     return redirect("/user/"+session['user']['username'])
 
-@app.route('/_upd_pos', methods=['POST'])
+@app.route('/ajax/_upd_pos', methods=['POST'])
 def upd():
     sl=request.form['sl']
-    x=0
-    for i in eval(sl):
-        x=x+1
-        empira_upd_task_pos(session['user'], i, x)
+    sl=eval(sl)
+    print sl
+    empira._upd_tasks_pos(session['user']['_id'], sl)
     return ""#redirect("/"+session['user']['username'])
 
-@app.route('/user/_add_new_task', methods=['POST'])
+@app.route('/ajax/_add_new_task', methods=['POST'])
 def add_task():
-    def to_li(t):
-        txt='<li class="ui-state-default" id="'+escape(str(t['_id']))+'"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>'+t['title']+'</li>'
-        return txt
     t=empira._add_task(session['user']['_id'],request.form['title'])
-    return to_li(t[0])
+    return render_template("task_elem", t=t)
+
+@app.route('/ajax/_finish_task/<tid>')
+def finish_task(tid):
+    empira._finish_task(session['user']['_id'], tid)
 
 @app.route('/',methods=['POST','GET'])
 def login():
@@ -39,7 +52,7 @@ def login():
         t=auth.log_the_user_in(request.form['username'],request.form['pass'])
         if t:
             session['user']=t
-            return redirect("/user/"+session['user']['un'])
+            return redirect("/user/")
         else:
             return 'invalid username/password'
     if 'user' in session:
@@ -57,58 +70,21 @@ def login():
 @app.route('/user/')#личная страничка
 def user():
     if user in session:
-        return redirect("/user/"+session['user']['un'])
+        return my_page()
     else:
         return redirect("/")
 
 @app.route('/user/<username>')#личная страничка
 def page(username):
     if session['user']['un']==username:
-        return my_page_empira()
+        return my_page()
     else:
-        return not_my_page_empira()
+        return not_my_page()
         
+
 @app.route('/version/005')
 def vers():
-    return """
-Версия 0.05, которой не должно было быть.<br>
-Определённо dev.<br>
-<br>
-Мой раб, который веб-дизайнер, ушёл в запой. Я пинаю заборы. Такие дела.<br>
-Итак, в этой версии:<br>
-(извините, мне стыдно это писать, но пока что у нас ровно нихуя. Этого<br>
-недорелиза вообще бы не было, если б меня больно не укусила в мозг <br>
-мерзкая личинка под названием "совесть")<br>
-+ Добавление дел<br>
-+ Сортировка дел<br>
-+ Сохранение порядка дел<br>
-+ Удаление дел<br>
-<br>
-+ Регистрация (пока что регать могут только админы, то есть только я)<br>
-+ Аутентефикация<br>
-<br>
-Ну а теперь немного о будущем. Начнём, разумеется, с ту-ду листа для <br>
-версии 0.1:<br>
-* ПРИШИТЬ ДИЗАЙН, БЛЕАТЬ!<br>
-* Сделать простенький архив дел, и, соответственно, кнопку "дело сделано"<br>
-* Сделать кнопки "взяться за дело" и "отложить дело"<br>
-    Эти кнопочки нужны чтобы знать сколько времени на какое дело у вас ушло.<br>
-* (Возможно) Просмотр чужих списков дел<br>
-* (Возможно) Поручить дело другому человеку (в 0.2 эта возможность должна быть обязательно)<br>
-Планируемое время обновления до 0.1 - завтра, 13 июля 2011-го года, ближе к полуночи.<br>
-
-Думаю, кому-то могут быть интересны дальнейшие планы. Что ж, до версии 0.4 проект будет<br>
-работать в тестовом режиме, в 0.4 открою регистрацию. С версии 0.7 выложу<br>
-сорцы. В том числе всех предыдущих версий. А если говорить о вещах более<br>
-насущных - в версии 0.2 должна появиться возможность группировать дела.<br>
-В версии 0.3 - возможность строить иерархии дел (на базе майндмапов) и <br>
-пользователей (чтобы можно было знать, кто кому может давать задания).<br>
-В версии 0.4 хочу реализовать буферы дел для групп и, желательно, <br>
-жаббер-гейт к этому добру.<br>
-Надеюсь добраться до 0.4 к августу, но сопящая пьяная рожа рядом намекает,<br>
-что чёрта с два я успею.<br>
-Планы на 0.7 и 1.0 - октябрь и январь соответственно.
-    """
+    return """sdf"""
 
 app.secret_key="fwqefADSOFWepjdsOGjewoNGVODSJvgoewvOEWJ#$)T@#G@J$YGEWN(G@$*#FFFEWewf@"
 

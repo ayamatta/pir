@@ -18,6 +18,9 @@ def setdoc(db, doc):
     getdb(db)[doc['_id']]=doc
     return getdoc(db, doc['_id'])
 
+def _perm_check(groups, perm):
+    return (list(set(groups) & set(perm))!=[])
+
 def cani(groups, shit, ifican):
     if 2 in groups:
         return ifican[0](*ifican[1])

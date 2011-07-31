@@ -5,6 +5,7 @@ def log_the_user_in(un, pw):
         user=user[0]['value']
         groups=core.getdb('groups').view("users/membership",key=int(user['_id']), reduce=True).rows[0]['value']
         groups.append(-int(user['_id']))
+        groups.append(1)
         user['groups']=groups
         user['_id']=int(user['_id'])
         return user

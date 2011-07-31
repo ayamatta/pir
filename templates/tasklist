@@ -1,0 +1,5 @@
+<ul id="sortable">
+{% for task in tl %}
+	<li class="ui-state-default" id="{{ task._id }}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>{{ task.title }}</li>
+{% endfor %}
+</ul>
