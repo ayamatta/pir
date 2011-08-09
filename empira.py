@@ -28,9 +28,9 @@ def _create_task(task_title):
     _set_task(task)
     return task
 
-def _create_view(un, vtitle, pid=None,  path=[]):
+def _create_view(un, vtitle, pid=None):
     vname="cat_"+__newid()
-    view=__create_viewdict(un+"_"+vname, vtitle, path)
+    view=__create_viewdict(un+"_"+vname, vtitle, [])
     core.setdoc('task-views', view)
     if pid:
         _change_view_path(pid, view['_id'])
