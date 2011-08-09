@@ -1,5 +1,11 @@
-<ul id="sortable">
+<ul id="tasklist">
 {% for task in tl %}
-	<li class="ui-state-default" id="{{ task._id }}"><span class="ui-icon ui-icon-arrowthick-2-n-s"></span>{{ task.title }}</li>
+	<li class="pir_el" style="background-color:pink;border:5px;margin-top:5px;" id="{{task._id}}" data-pir_type="task">{{task.title}}
+		<a href='#'> <div style="background-color:red;margin-top:5px;width:10px;height:10px;"></div> </a>
+	</li>
 {% endfor %}
 </ul>
+<form action="#" id="task_add">
+	<input type="text" id="nt_title">
+	<input type="submit">
+</form>
