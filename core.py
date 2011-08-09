@@ -4,8 +4,8 @@ import couchdb
 def getdb(db):
     return couchdb.Database("http://localhost:5984/"+db)
 
-def getview(db, name, key):
-    res=getdb(db).view(name, key=key).rows
+def getview(db, name, key, reduce=False):
+    res=getdb(db).view(name, key=key, reduce=reduce).rows
     values=[]
     for i in res:
         values.append(i['value'])

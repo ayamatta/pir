@@ -28,8 +28,9 @@ def _create_task(task_title):
     _set_task(task)
     return task
 
-def _create_view(un, vtitle, pid=None):
-    vname="cat_"+__newid()
+def _create_view(un, vtitle, pid=None, vname=""):
+    if vname=="":
+        vname="cat_"+__newid()
     view=__create_viewdict(un+"_"+vname, vtitle, [])
     core.setdoc('task-views', view)
     if pid:
@@ -53,8 +54,9 @@ def _add_task_to_view(vid, tid):
 
 def _del_task_from_view(vid, tid):
     view=core.getdoc('task-views', vid)
-    view['tasks'].remove(tid)
-    core.setdoc('task-views', view)
+    if tid in view['tasks']:
+        view['tasks'].remove(tid)
+        core.setdoc('task-views', view)
 
 def _change_view_path(pvid, cvid, called_recursive=False):
     new_parent=core.getdoc('task-views', pvid)
@@ -76,8 +78,7 @@ def _change_view_path(pvid, cvid, called_recursive=False):
 
 def _del_task_from_views(vids, tid):
     for vid in vids:
-        if vid['tasks'].find(tid)!=-1:
-            _del_task_from_view(vid, tid)
+        _del_task_from_view(vid, tid)
 
 def _move_task_beth_views(svid, dvid, tid):
     dest=core.getdoc('task-views', dvid)
@@ -101,9 +102,7 @@ def _upd_task_order(vid, neworder):
 
 def _del_task(tid):
     core.deldoc('tasks', tid)
-    """
-    Чистка.
-    """
+    _del_task_from_views(core.getview('task-views', 'tasks/getvidlistbytid', tid, reduce=True)[0], tid)
 
 def _get_task(tid):
     return core.getdoc('tasks', tid)
