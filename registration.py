@@ -1,4 +1,5 @@
  # -*- coding: utf-8 -*-
+
 import core
 
 def __create_userdict(un, pw):

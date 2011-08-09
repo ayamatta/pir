@@ -5,7 +5,7 @@ def getdb(db):
     return couchdb.Database("http://localhost:5984/"+db)
 
 def getview(db, name, key):
-    res=core.getdb(db).view(name, key=key).rows
+    res=getdb(db).view(name, key=key).rows
     values=[]
     for i in res:
         values.append(i['value'])
