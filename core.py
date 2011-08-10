@@ -6,9 +6,12 @@ def getdb(db):
 
 def getview(db, name, key, reduce=False):
     res=getdb(db).view(name, key=key, reduce=reduce).rows
-    values=[]
-    for i in res:
-        values.append(i['value'])
+    if not reduce:
+        values=[]
+        for i in res:
+            values.append(i['value'])
+    else:
+        values=res['values'][0]
     return values
 
 def getdoc(db, id):
